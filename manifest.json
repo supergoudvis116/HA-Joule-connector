@@ -1,0 +1,9 @@
+{
+  "domain": "ojmicroline_thermostat",
+  "name": "Joule Cloud Connector",
+  "codeowners": ["@supergoudvis"],
+  "config_flow": true,
+  "iot_class": "cloud_polling",
+  "requirements": [],
+  "version": "0.0.1"
+}

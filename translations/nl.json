@@ -1,0 +1,75 @@
+{
+    "config": {
+        "flow_title": "{name}",
+        "step": {
+            "user": {
+                "data": {
+                    "model": "Model"
+                },
+                "data_description": {
+                    "model": "De WD5-serie betreft de OWD5 en MWD5; de WG4-serie betreft de UWG4 en AWG4."
+                }
+            },
+            "wd5": {
+                "data": {
+                    "api_key": "API Key",
+                    "username": "Gebruikersnaam",
+                    "password": "Wachtwoord",
+                    "host": "Host",
+                    "customer_id": "Customer ID"
+                },
+                "data_description": {
+                    "api_key": "De API key die door de app wordt gebruikt.",
+                    "host": "Laat dit leeg om de standaardwaarde te gebruiken. Indien opgegeven, laat https:// weg.",
+                    "customer_id": "Laat dit leeg om de standaardwaarde te gebruiken."
+                }
+            },
+            "wg4": {
+                "data": {
+                    "username": "Gebruikersnaam",
+                    "password": "Wachtwoord",
+                    "host": "Host"
+                },
+                "data_description": {
+                    "host": "Laat dit leeg om de standaardwaarde te gebruiken. Indien opgegeven, laat https:// weg."
+                }
+            }
+        },
+        "error": {
+            "invalid_auth": "Onjuiste authenticatie gegevens",
+            "timeout": "Er heeft een timeout plaatsgevonden, probeer opnieuw",
+            "connection_failed": "Er ging iets mis met de verbinding, probeer opnieuw",
+            "unknown": "Onverwachte fout"
+        },
+        "abort": {
+            "already_configured": "Deze combinatie is al geconfigureerd."
+        }
+    },
+    "entity": {
+        "climate": {
+            "ojthermostat": {
+                "state_attributes": {
+                    "preset_mode": {
+                        "state": {
+                            "schedule": "Schema",
+                            "manual": "Handmatig",
+                            "vacation": "Vakantie",
+                            "frost_protection": "Vorstbescherming"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "description": "Stel de standaard opties in wanneer de temperatuur van de thermostaat wordt gewijzigd.",
+                "data": {
+                    "use_comfort_mode": "Zet de modus naar comfort wanneer de temperatuur wijzigd.",
+                    "comfort_mode_duration": "De totale tijd in minuten dat de comfort mode aan moet staan."
+                }
+            }
+        }
+    }
+}
