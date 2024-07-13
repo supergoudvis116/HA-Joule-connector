@@ -112,7 +112,7 @@ class JouleConnector:
     """Main class for handling data from JCC API."""    
 
     _auth_host : str = "joule-technologies-dev.eu.auth0.com"
-    _host : str = "user-api.dev.joule-cloud.com"
+    _host : str = "user-api.joule-cloud.com"
     _token : str = ""
 
     __request_timeout: float = 30.0
