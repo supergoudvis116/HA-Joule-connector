@@ -13,6 +13,8 @@ You have two options for installation:
 
 ### HACS
 
+- Setup HACS as described [here](https://hacs.xyz/docs/setup/download/)
+
 - Go to the [HACS](https://hacs.xyz) panel
 - Go to integrations
 - Search for 'Joule Cloud Connector'
