@@ -1,7 +1,5 @@
 """Config flow to configure Joule."""
 
-from io import BytesIO
-import json
 from typing import Any
 
 import logging

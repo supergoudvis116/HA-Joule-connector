@@ -26,3 +26,8 @@ You have two options for installation:
 ### WORKING ON:
 
 - EVA TH250
+
+###
+
+Heavily inspired by [ojmicroline-thermostat](https://github.com/robbinjanssen/home-assistant-ojmicroline-thermostat)
+Thank you for giving me a great starting point!

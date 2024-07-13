@@ -1,75 +1,75 @@
 {
-    "config": {
-        "flow_title": "{name}",
-        "step": {
-            "user": {
-                "data": {
-                    "model": "Modelo"
-                },
-                "data_description": {
-                    "model": "A série WD5 inclui OWD5 e MWD5; a série WG4 inclui UWG4 e AWG4."
-                }
-            },
-            "wd5": {
-                "data": {
-                    "username": "Utilizador",
-                    "password": "Senha",
-                    "api_key": "Chave API",
-                    "host": "Endreço",
-                    "customer_id": "ID de Cliente"
-                },
-                "data_description": {
-                    "api_key": "A chave de API usada pelo aplicativo",
-                    "host": "Deixe em branco para usar o padrão. Se especificado, omita https://.",
-                    "customer_id": "Deixe em branco para usar o padrão."
-                }
-            },
-            "wg4": {
-                "data": {
-                    "username": "Utilizador",
-                    "password": "Senha",
-                    "host": "Endereço"
-                },
-                "data_description": {
-                    "host": "Deixe em branco para usar o padrão. Se especificado, omita https://."
-                }
-            }
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "data": {
+          "model": "Modelo"
         },
-        "error": {
-            "invalid_auth": "Erro na autenticação",
-            "timeout": "Erro de timeout, tente novamente",
-            "connection_failed": "Falha na ligação, tente novamente",
-            "unknown": "Erro desconhecido"
+        "data_description": {
+          "model": "A série WD5 inclui OWD5 e MWD5; a série WG4 inclui UWG4 e AWG4."
+        }
+      },
+      "wd5": {
+        "data": {
+          "username": "Utilizador",
+          "password": "Senha",
+          "api_key": "Chave API",
+          "host": "Endreço",
+          "customer_id": "ID de Cliente"
         },
-        "abort": {
-            "already_configured": "As suas credenciais já se encontram configuradas."
+        "data_description": {
+          "api_key": "A chave de API usada pelo aplicativo",
+          "host": "Deixe em branco para usar o padrão. Se especificado, omita https://.",
+          "customer_id": "Deixe em branco para usar o padrão."
         }
+      },
+      "wg4": {
+        "data": {
+          "username": "Utilizador",
+          "password": "Senha",
+          "host": "Endereço"
+        },
+        "data_description": {
+          "host": "Deixe em branco para usar o padrão. Se especificado, omita https://."
+        }
+      }
     },
-    "entity": {
-        "climate": {
-            "ojthermostat": {
-                "state_attributes": {
-                    "preset_mode": {
-                        "state": {
-                            "schedule": "Agendar",
-                            "manual": "Manual",
-                            "vacation": "Férias",
-                            "frost_protection": "Proteção contra congelamento"
-                        }
-                    }
-                }
-            }
-        }
+    "error": {
+      "invalid_auth": "Erro na autenticação",
+      "timeout": "Erro de timeout, tente novamente",
+      "connection_failed": "Falha na ligação, tente novamente",
+      "unknown": "Erro desconhecido"
     },
-    "options": {
-        "step": {
-            "init": {
-                "description": "Selecione as opcções padrão quando est+a a alterar a temperatura do termostato",
-                "data": {
-                    "use_comfort_mode": "Definna para modo conforto quando está a mudar a temperatura.",
-                    "comfort_mode_duration": "Qual a duração que o modo conforto deve durar."
-                }
-            }
-        }
+    "abort": {
+      "already_configured": "As suas credenciais já se encontram configuradas."
     }
+  },
+  "entity": {
+    "climate": {
+      "joule": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "schedule": "Agendar",
+              "manual": "Manual",
+              "vacation": "Férias",
+              "frost_protection": "Proteção contra congelamento"
+            }
+          }
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "description": "Selecione as opcções padrão quando est+a a alterar a temperatura do termostato",
+        "data": {
+          "use_comfort_mode": "Definna para modo conforto quando está a mudar a temperatura.",
+          "comfort_mode_duration": "Qual a duração que o modo conforto deve durar."
+        }
+      }
+    }
+  }
 }
