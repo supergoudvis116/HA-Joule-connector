@@ -1,11 +1,11 @@
-"""OJMicroline Thermostat platform configuration."""
+"""Joule Thermostat platform configuration."""
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
 from .const import CONF_MODEL, CONFIG_FLOW_VERSION, DOMAIN, MODEL_WD5_SERIES
-from .coordinator import OJMicrolineDataUpdateCoordinator
+from .coordinator import JouleDataUpdateCoordinator
 
 PLATFORMS = [
     Platform.CLIMATE,
@@ -15,7 +15,7 @@ PLATFORMS = [
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up OJMicroline as config entry.
+    """Set up Joule as config entry.
 
     Args:
     ----
@@ -29,7 +29,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """
     hass.data.setdefault(DOMAIN, {})
 
-    coordinator = OJMicrolineDataUpdateCoordinator(hass, entry)
+    coordinator = JouleDataUpdateCoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
 
     hass.data[DOMAIN][entry.entry_id] = coordinator

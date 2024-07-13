@@ -1,22 +1,25 @@
-"""Config flow to configure OJMicroline."""
+"""Config flow to configure Joule."""
 
+from io import BytesIO
+import json
 from typing import Any
 
+import logging
+from urllib.parse import urlencode
+import requests
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry, ConfigFlow, OptionsFlow
-from homeassistant.const import CONF_API_KEY, CONF_HOST, CONF_PASSWORD, CONF_USERNAME
+from homeassistant.const import CONF_API_KEY, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 
-from ojmicroline_thermostat import (
-    OJMicrolineAuthError,
-    OJMicrolineConnectionError,
-    OJMicrolineError,
-    OJMicrolineTimeoutError,
+from .joule_api import (
+    JCCConnectionError,
+    JCCError,
+    JCCTimeoutError,
 )
-from ojmicroline_thermostat.const import COMFORT_DURATION
 
-from .api import oj_microline_from_config_entry_data
+from .joule_api import JouleConnector
 from .const import (
     CONF_COMFORT_MODE_DURATION,
     CONF_CUSTOMER_ID,
@@ -29,44 +32,28 @@ from .const import (
     MODEL_WG4_SERIES,
 )
 
+_LOGGER = logging.getLogger(__name__)
+
 DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_MODEL): vol.In([MODEL_WD5_SERIES, MODEL_WG4_SERIES]),
         vol.Required(CONF_USERNAME): str,
         vol.Required(CONF_PASSWORD): str,
-        CONF_HOST: str,
         CONF_CUSTOMER_ID: int,
         CONF_API_KEY: str,
-    }
-)
-
-USER_STEP_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_MODEL): vol.In([MODEL_WD5_SERIES, MODEL_WG4_SERIES]),
-    }
-)
-
-WD5_STEP_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_USERNAME): str,
-        vol.Required(CONF_PASSWORD): str,
-        vol.Required(CONF_API_KEY): str,
-        CONF_HOST: str,
-        CONF_CUSTOMER_ID: int,
     }
 )
 
 WG4_STEP_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_USERNAME): str,
-        vol.Required(CONF_PASSWORD): str,
-        CONF_HOST: str,
+        vol.Required(CONF_PASSWORD): str
     }
 )
 
 
-class OJMicrolineFlowHandler(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
-    """Handle an OJ Microline config flow."""
+class JouleFlowHandler(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
+    """Handle an Joule config flow."""
 
     VERSION = CONFIG_FLOW_VERSION
 
@@ -86,7 +73,7 @@ class OJMicrolineFlowHandler(ConfigFlow, domain=DOMAIN):  # type: ignore[call-ar
             The created config flow.
 
         """
-        return OJMicrolineOptionsFlowHandler(config_entry)
+        return JouleOptionsFlowHandler(config_entry)
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> Any:
         """Handle a flow initialized by the user.
@@ -100,14 +87,7 @@ class OJMicrolineFlowHandler(ConfigFlow, domain=DOMAIN):  # type: ignore[call-ar
             The created config entry or a form to re-enter the user input with errors.
 
         """
-        if user_input:
-            if user_input[CONF_MODEL] == MODEL_WD5_SERIES:
-                return await self.async_step_wd5()
-            return await self.async_step_wg4()
-        return self.async_show_form(
-            step_id="user",
-            data_schema=USER_STEP_SCHEMA,
-        )
+        return await self.async_step_wg4()
 
     async def async_step_wg4(self, user_input: dict[str, Any] | None = None) -> Any:
         """Step that gathers information for WG4-series thermostats.
@@ -125,6 +105,9 @@ class OJMicrolineFlowHandler(ConfigFlow, domain=DOMAIN):  # type: ignore[call-ar
         """
         errors: dict[str, str] = {}
         if user_input:
+
+            _LOGGER.debug("Trying to create entry with data: %s", user_input)
+
             result = await self._async_try_create_entry(
                 {
                     CONF_MODEL: MODEL_WG4_SERIES,
@@ -138,34 +121,6 @@ class OJMicrolineFlowHandler(ConfigFlow, domain=DOMAIN):  # type: ignore[call-ar
             step_id="wg4", data_schema=WG4_STEP_SCHEMA, errors=errors
         )
 
-    async def async_step_wd5(self, user_input: dict[str, Any] | None = None) -> Any:
-        """Step that gathers information for WD5-series thermostats.
-
-        The result is a config entry if successful.
-
-        Args:
-        ----
-            user_input: The input received from the user or none.
-
-        Returns:
-        -------
-            The created config entry or a form to re-enter the user input with errors.
-
-        """
-        errors: dict[str, str] = {}
-        if user_input:
-            result = await self._async_try_create_entry(
-                {
-                    CONF_MODEL: MODEL_WD5_SERIES,
-                    **user_input,
-                },
-                errors,
-            )
-            if result is not None:
-                return result
-        return self.async_show_form(
-            step_id="wd5", data_schema=WD5_STEP_SCHEMA, errors=errors
-        )
 
     async def _async_try_create_entry(
         self, data: dict[str, Any], errors: dict[str, str]
@@ -175,6 +130,9 @@ class OJMicrolineFlowHandler(ConfigFlow, domain=DOMAIN):  # type: ignore[call-ar
         If successful, calls async_create_entry and returns the FlowResult.
         Otherwise, stores an error in the errors dict and returns None.
         """
+
+
+
         data = DATA_SCHEMA(data)
         try:
             # Disallow duplicate entries...
@@ -184,18 +142,26 @@ class OJMicrolineFlowHandler(ConfigFlow, domain=DOMAIN):  # type: ignore[call-ar
                     for k in data
                     # ... only considering model/host/username as
                     # distinguishing keys.
-                    if k in [CONF_MODEL, CONF_HOST, CONF_USERNAME]
+                    if k in [CONF_USERNAME]
                 }
             )
-            api = oj_microline_from_config_entry_data(data, self.hass)
-            await api.login()
-        except OJMicrolineAuthError:
-            errors["base"] = "invalid_auth"
-        except OJMicrolineTimeoutError:
+                        
+            creds = {"username": data[CONF_USERNAME], 
+                     'password':  data[CONF_PASSWORD],
+                     'grant_type': 'password', 
+                     'scope': 'openid email profile', 
+                     'audience': 'https://user-api.joule-cloud.com/',
+                     'client_secret': 'Y8LFBEcfE3iZagOPNcrK3DvPsqrrAddXsy1D3jSICu7-LYoWJuohk13yZgWXD5UP',
+                     'client_id': 'KUDPOkC48V3AfQH9GoVnDsvzlyAuvKFD'
+                     }
+
+            api = JouleConnector()
+            await api.login(creds)
+        except JCCTimeoutError:
             errors["base"] = "timeout"
-        except OJMicrolineConnectionError:
+        except JCCConnectionError:
             errors["base"] = "connection_failed"
-        except OJMicrolineError:
+        except JCCError:
             errors["base"] = "unknown"
         else:
             return self.async_create_entry(
@@ -204,7 +170,7 @@ class OJMicrolineFlowHandler(ConfigFlow, domain=DOMAIN):  # type: ignore[call-ar
         return None
 
 
-class OJMicrolineOptionsFlowHandler(OptionsFlow):
+class JouleOptionsFlowHandler(OptionsFlow):
     """Handle options."""
 
     def __init__(self, config_entry: ConfigEntry) -> None:

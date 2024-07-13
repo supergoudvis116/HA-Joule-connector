@@ -1,4 +1,4 @@
-"""Miscellaneous sensors for OJ Microline thermostats."""
+"""Miscellaneous sensors for Joule thermostats."""
 
 from __future__ import annotations
 
@@ -14,31 +14,17 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import UnitOfTemperature
 
-from ojmicroline_thermostat import Thermostat
-from ojmicroline_thermostat.const import (
-    REGULATION_BOOST,
-    REGULATION_COMFORT,
-    SENSOR_FLOOR,
-    SENSOR_ROOM,
-    SENSOR_ROOM_FLOOR,
-)
+from .joule_api import Thermostat
 
-from .const import DOMAIN, MODE_FLOOR, MODE_ROOM, MODE_ROOM_FLOOR
-from .models import OJMicrolineEntity
+from .const import DOMAIN
+from .models import JouleEntity
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-    from .coordinator import OJMicrolineDataUpdateCoordinator
-
-
-VENDOR_TO_HA_STATE = {
-    SENSOR_FLOOR: MODE_FLOOR,
-    SENSOR_ROOM: MODE_ROOM,
-    SENSOR_ROOM_FLOOR: MODE_ROOM_FLOOR,
-}
+    from .coordinator import JouleDataUpdateCoordinator
 
 # A sensor's value is passed through a function of this type to format it.
 ValueFormatter = Callable[[Any], Any]
@@ -49,8 +35,8 @@ ValueGetterOverride = Callable[[Thermostat], Any]
 
 
 @dataclass
-class OJMicrolineSensorInfo:
-    """Describes a sensor for the OJ Microline thermostat.
+class JouleSensorInfo:
+    """Describes a sensor for the Joule thermostat.
 
     In addition to a SensorEntityDescription for Home Assistant, it may
     include Callables to fetch the raw value (overriding the default behavior
@@ -83,108 +69,18 @@ def _temp_formatter(temp: Any) -> float:
     return temp / 100
 
 
-SENSOR_TYPES: list[OJMicrolineSensorInfo] = [
-    OJMicrolineSensorInfo(
+SENSOR_TYPES: list[JouleSensorInfo] = [
+    JouleSensorInfo(
         SensorEntityDescription(
             name="Temperature Room",
             icon="mdi:home-thermometer",
-            native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+            native_unit_of_measurement=UnitOfTemperature.FAHRENHEIT,
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
-            key="temperature_room",
+            key="temperature",
         ),
         formatter=_temp_formatter,
-    ),
-    OJMicrolineSensorInfo(
-        SensorEntityDescription(
-            name="Temperature Floor",
-            icon="mdi:heating-coil",
-            native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-            device_class=SensorDeviceClass.TEMPERATURE,
-            state_class=SensorStateClass.MEASUREMENT,
-            key="temperature_floor",
-        ),
-        formatter=_temp_formatter,
-    ),
-    OJMicrolineSensorInfo(
-        SensorEntityDescription(
-            name="Temperature Range Min",
-            icon="mdi:thermometer-chevron-down",
-            native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-            device_class=SensorDeviceClass.TEMPERATURE,
-            state_class=SensorStateClass.MEASUREMENT,
-            key="min_temperature",
-        ),
-        formatter=_temp_formatter,
-    ),
-    OJMicrolineSensorInfo(
-        SensorEntityDescription(
-            name="Temperature Range Max",
-            icon="mdi:thermometer-chevron-up",
-            native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-            device_class=SensorDeviceClass.TEMPERATURE,
-            state_class=SensorStateClass.MEASUREMENT,
-            key="max_temperature",
-        ),
-        formatter=_temp_formatter,
-    ),
-    OJMicrolineSensorInfo(
-        SensorEntityDescription(
-            name="Temperature Set Point",
-            native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-            device_class=SensorDeviceClass.TEMPERATURE,
-            state_class=SensorStateClass.MEASUREMENT,
-            key="temperature_set_point",
-        ),
-        formatter=_temp_formatter,
-        value_getter=lambda thermostat: thermostat.get_target_temperature(),
-    ),
-    OJMicrolineSensorInfo(
-        SensorEntityDescription(
-            name="Sensor Mode", icon="mdi:thermometer-lines", key="sensor_mode"
-        ),
-        formatter=VENDOR_TO_HA_STATE.get,
-    ),
-    OJMicrolineSensorInfo(
-        SensorEntityDescription(
-            name="Boost End Time",
-            device_class=SensorDeviceClass.TIMESTAMP,
-            key="boost_end_time",
-        ),
-        value_getter=lambda thermostat: thermostat.boost_end_time
-        if thermostat.regulation_mode == REGULATION_BOOST
-        else None,
-    ),
-    OJMicrolineSensorInfo(
-        SensorEntityDescription(
-            name="Comfort End Time",
-            device_class=SensorDeviceClass.TIMESTAMP,
-            key="comfort_end_time",
-        ),
-        value_getter=lambda thermostat: thermostat.comfort_end_time
-        if thermostat.regulation_mode == REGULATION_COMFORT
-        else None,
-    ),
-    OJMicrolineSensorInfo(
-        SensorEntityDescription(
-            name="Vacation Begin Time",
-            device_class=SensorDeviceClass.TIMESTAMP,
-            key="vacation_begin_time",
-        ),
-        value_getter=lambda thermostat: thermostat.vacation_begin_time
-        if thermostat.vacation_mode
-        else None,
-    ),
-    OJMicrolineSensorInfo(
-        SensorEntityDescription(
-            name="Vacation End Time",
-            device_class=SensorDeviceClass.TIMESTAMP,
-            key="vacation_end_time",
-        ),
-        value_getter=lambda thermostat: thermostat.vacation_end_time
-        if thermostat.vacation_mode
-        else None,
-    ),
+    )
 ]
 
 
@@ -193,7 +89,7 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Load all OJMicroline Thermostat sensors.
+    """Load all Joule Thermostat sensors.
 
     Args:
     ----
@@ -214,7 +110,7 @@ async def async_setup_entry(
             )
             if val is not None:
                 entities.append(
-                    OJMicrolineSensor(
+                    JouleSensor(
                         coordinator,
                         idx,
                         info.entity_description,
@@ -226,8 +122,8 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class OJMicrolineSensor(OJMicrolineEntity, SensorEntity):
-    """Defines an OJ Microline Sensor."""
+class JouleSensor(JouleEntity, SensorEntity):
+    """Defines an Joule Sensor."""
 
     entity_description: SensorEntityDescription
     formatter: ValueFormatter | None
@@ -235,7 +131,7 @@ class OJMicrolineSensor(OJMicrolineEntity, SensorEntity):
 
     def __init__(  # pylint: disable=too-many-arguments  # noqa: PLR0913
         self,
-        coordinator: OJMicrolineDataUpdateCoordinator,
+        coordinator: JouleDataUpdateCoordinator,
         idx: str,
         entity_description: SensorEntityDescription,
         formatter: ValueFormatter | None,

@@ -1,4 +1,4 @@
-"""Climate sensors for OJMicroline."""
+"""Climate sensors for Joule."""
 
 import asyncio
 import logging
@@ -11,11 +11,6 @@ from homeassistant.components.climate import (
     HVACAction,
     HVACMode,
 )
-from homeassistant.components.climate.const import (
-    PRESET_BOOST,
-    PRESET_COMFORT,
-    PRESET_ECO,
-)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
@@ -23,47 +18,24 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from ojmicroline_thermostat import OJMicrolineError
-from ojmicroline_thermostat.const import (
-    REGULATION_BOOST,
-    REGULATION_COMFORT,
-    REGULATION_ECO,
-    REGULATION_FROST_PROTECTION,
-    REGULATION_MANUAL,
-    REGULATION_SCHEDULE,
-    REGULATION_VACATION,
-)
+from .exceptions import JCCError
 
 from .const import (
     CONF_COMFORT_MODE_DURATION,
     CONF_USE_COMFORT_MODE,
     DOMAIN,
     MANUFACTURER,
-    PRESET_FROST_PROTECTION,
-    PRESET_MANUAL,
-    PRESET_SCHEDULE,
-    PRESET_VACATION,
 )
-from .coordinator import OJMicrolineDataUpdateCoordinator
+from .coordinator import JouleDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-VENDOR_TO_HA_STATE = {
-    REGULATION_SCHEDULE: PRESET_SCHEDULE,
-    REGULATION_COMFORT: PRESET_COMFORT,
-    REGULATION_MANUAL: PRESET_MANUAL,
-    REGULATION_VACATION: PRESET_VACATION,
-    REGULATION_FROST_PROTECTION: PRESET_FROST_PROTECTION,
-    REGULATION_BOOST: PRESET_BOOST,
-    REGULATION_ECO: PRESET_ECO,
-}
-HA_TO_VENDOR_STATE = {v: k for k, v in VENDOR_TO_HA_STATE.items()}
 
 
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
-    """Load all OJMicroline Thermostat devices.
+    """Load all Joule Thermostat devices.
 
     Args:
     ----
@@ -76,17 +48,17 @@ async def async_setup_entry(
     entities = []
     for idx in coordinator.data:
         entities.append(  # noqa: PERF401
-            OJMicrolineThermostat(
+            JouleThermostat(
                 coordinator=coordinator, idx=idx, options=entry.options
             )
         )
     async_add_entities(entities)
 
 
-class OJMicrolineThermostat(
-    CoordinatorEntity[OJMicrolineDataUpdateCoordinator], ClimateEntity
+class JouleThermostat(
+    CoordinatorEntity[JouleDataUpdateCoordinator], ClimateEntity
 ):
-    """OJMicrolineThermostat climate."""
+    """JouleThermostat climate."""
 
     _attr_hvac_modes: ClassVar[list[HVACMode]] = [HVACMode.HEAT]
     _attr_hvac_mode = HVACMode.HEAT
@@ -103,7 +75,7 @@ class OJMicrolineThermostat(
 
     def __init__(
         self,
-        coordinator: OJMicrolineDataUpdateCoordinator,
+        coordinator: JouleDataUpdateCoordinator,
         idx: str,
         options: Mapping[str, Any],
     ) -> None:
@@ -139,30 +111,6 @@ class OJMicrolineThermostat(
             model=self.coordinator.data[self.idx].model,
         )
 
-    @property
-    def preset_modes(self) -> list[str] | None:
-        """Return a list of available preset modes.
-
-        Returns
-        -------
-            A list of supported preset modes in string format.
-
-        """
-        return [
-            VENDOR_TO_HA_STATE[mode]
-            for mode in self.coordinator.data[self.idx].supported_regulation_modes
-        ]
-
-    @property
-    def preset_mode(self) -> str:
-        """Return the current preset mode, e.g., schedule, manual.
-
-        Returns
-        -------
-            The preset mode in a string format.
-
-        """
-        return VENDOR_TO_HA_STATE.get(self.coordinator.data[self.idx].regulation_mode)  # type: ignore[return-value]
 
     @property
     def current_temperature(self) -> float:
@@ -186,27 +134,29 @@ class OJMicrolineThermostat(
         """
         return self.coordinator.data[self.idx].get_target_temperature() / 100
 
+
     @property
-    def max_temp(self) -> float:
-        """Return max temperature.
+    def preset_modes(self) -> list[str] | None:
+        """Return a list of available preset modes.
 
         Returns
         -------
-            The max temperature in a float format.
+            A list of supported preset modes in string format.
 
         """
-        return self.coordinator.data[self.idx].max_temperature / 100
+        return [
+        ]
 
     @property
-    def min_temp(self) -> float:
-        """Return min temperature.
+    def preset_mode(self) -> str:
+        """Return the current preset mode, e.g., schedule, manual.
 
         Returns
         -------
-            The min temperature in a float format.
+            The preset mode in a string format.
 
         """
-        return self.coordinator.data[self.idx].min_temperature / 100
+        return ""  # type: ignore[return-value]
 
     @property
     def hvac_action(self) -> HVACAction | None:
@@ -238,7 +188,7 @@ class OJMicrolineThermostat(
                 HA_TO_VENDOR_STATE.get(preset_mode),
             )
             await self._async_delayed_request_refresh()
-        except OJMicrolineError:
+        except JCCError:
             _LOGGER.exception(
                 'Failed setting preset mode "%s" (%s)',
                 self.coordinator.data[self.idx].name,
@@ -256,7 +206,7 @@ class OJMicrolineThermostat(
         if (temperature := kwargs.get(ATTR_TEMPERATURE)) is None:
             return
 
-        regulation_mode = REGULATION_MANUAL
+        regulation_mode = 0
         if self.options.get(CONF_USE_COMFORT_MODE) is True:
             regulation_mode = REGULATION_COMFORT
 

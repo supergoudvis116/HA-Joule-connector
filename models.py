@@ -1,4 +1,4 @@
-"""Support for OJ Microline entities."""
+"""Support for Joule entities."""
 
 from __future__ import annotations
 
@@ -8,15 +8,15 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
-from .coordinator import OJMicrolineDataUpdateCoordinator
+from .coordinator import JouleDataUpdateCoordinator
 
 
-class OJMicrolineEntity(CoordinatorEntity[OJMicrolineDataUpdateCoordinator], Entity):
-    """Defines an OJ Microline Entity."""
+class JouleEntity(CoordinatorEntity[JouleDataUpdateCoordinator], Entity):
+    """Defines an Joule Entity."""
 
     idx: str
 
-    def __init__(self, coordinator: OJMicrolineDataUpdateCoordinator, idx: str) -> None:
+    def __init__(self, coordinator: JouleDataUpdateCoordinator, idx: str) -> None:
         """Initialise the entity.
 
         Args:

@@ -1,4 +1,4 @@
-"""Miscellaneous binary sensors for OJ Microline thermostats."""
+"""Miscellaneous binary sensors for Joule thermostats."""
 
 from __future__ import annotations
 
@@ -11,14 +11,14 @@ from homeassistant.components.binary_sensor import (
 )
 
 from .const import DOMAIN
-from .models import OJMicrolineEntity
+from .models import JouleEntity
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-    from .coordinator import OJMicrolineDataUpdateCoordinator
+    from .coordinator import JouleDataUpdateCoordinator
 
 BINARY_SENSOR_TYPES: list[BinarySensorEntityDescription] = [
     BinarySensorEntityDescription(
@@ -31,16 +31,6 @@ BINARY_SENSOR_TYPES: list[BinarySensorEntityDescription] = [
         icon="mdi:fire",
         key="heating",
     ),
-    BinarySensorEntityDescription(
-        name="Adaptive Mode",
-        icon="mdi:brain",
-        key="adaptive_mode",
-    ),
-    BinarySensorEntityDescription(
-        name="Open Window Detection",
-        icon="mdi:window-open",
-        key="open_window_detection",
-    ),
 ]
 
 
@@ -49,7 +39,7 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Load all OJMicroline Thermostat binary sensors.
+    """Load all Joule Thermostat binary sensors.
 
     Args:
     ----
@@ -65,19 +55,19 @@ async def async_setup_entry(
             # Different models of thermostat support different sensors;
             # skip creating entities if the value is None.
             if getattr(coordinator.data[idx], description.key) is not None:
-                entities.append(OJMicrolineBinarySensor(coordinator, idx, description))  # noqa: PERF401
+                entities.append(JouleBinarySensor(coordinator, idx, description))  # noqa: PERF401
 
     async_add_entities(entities)
 
 
-class OJMicrolineBinarySensor(OJMicrolineEntity, BinarySensorEntity):
-    """Defines an OJ Microline Binary Sensor sensor."""
+class JouleBinarySensor(JouleEntity, BinarySensorEntity):
+    """Defines an Joule Binary Sensor sensor."""
 
     entity_description: BinarySensorEntityDescription
 
     def __init__(
         self,
-        coordinator: OJMicrolineDataUpdateCoordinator,
+        coordinator: JouleDataUpdateCoordinator,
         idx: str,
         entity_description: BinarySensorEntityDescription,
     ) -> None:

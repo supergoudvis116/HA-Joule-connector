@@ -1,8 +1,8 @@
-"""Constants for the OJMicroline component."""
+"""Constants for the Joule component."""
 
-DOMAIN = "ojmicroline_thermostat"
-MANUFACTURER = "OJ Electronics"
-INTEGRATION_NAME = "OJ Microline Thermostat"
+DOMAIN = "joule_connector"
+MANUFACTURER = "Joule Technologies"
+INTEGRATION_NAME = "Joule Technologies"
 CONFIG_FLOW_VERSION = 2
 
 API_TIMEOUT = 30

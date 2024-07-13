@@ -1,5 +1,5 @@
 {
-  "domain": "ojmicroline_thermostat",
+  "domain": "joule_connector",
   "name": "Joule Cloud Connector",
   "codeowners": ["@supergoudvis"],
   "config_flow": true,
