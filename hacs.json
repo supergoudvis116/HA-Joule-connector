@@ -1,0 +1,6 @@
+{
+  "name": "Joule Cloud Connector",
+  "hide_default_branch": true,
+  "homeassistant": "2023.3.0",
+  "render_readme": true
+}
