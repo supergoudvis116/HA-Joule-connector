@@ -13,17 +13,36 @@ You have two options for installation:
 
 ### HACS
 
+#### Add HACS
 - Setup HACS as described [here](https://hacs.xyz/docs/setup/download/)
 
+#### Add the custom repository
 - Go to the [HACS](https://hacs.xyz) panel
 - Go to integrations
+- Click on the 3 dots in the upper right corner
+- Click on 'Custom repositories'
+- Enter 'https://github.com/supergoudvis116/HA-Joule-connector'
+- Select category 'Integration'
+- Click Add
 - Search for 'Joule Cloud Connector'
-- Click \'Download this repository with HACS'.
+- Click 'Download'
+- Restart your HomeAssistant server
+
+#### Add the integration
+- Click 'Settings'
+- Click 'Devices & services'
+- In the tab Integrations click on 'Add integration'
+- Search for 'Joule Cloud Connector'
 
 ### Manually
 
-- Copy "joule_connector" folder to the "/config/custom_components" folder.
-- Restart HA server.
+#### Add the custom repository
+
+- Copy "joule_connector" folder to the "/config/custom_components" folder
+- Restart HA server
+
+#### Add the integration
+- See description above in section HACS
 
 ### WORKING ON:
 
