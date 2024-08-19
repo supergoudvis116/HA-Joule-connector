@@ -99,8 +99,8 @@ class Thermostat:
     @classmethod
     def from_history(cls, thermostat: Thermostat, data: dict[str, Any]) -> Thermostat:
         """Return a new Thermostat instance based on JSON from the JCC History API."""
-        thermostat.set_point_temperature = int(data["room_setpoint"]["data"][0]["value"]) * 100
-        thermostat.temperature = int(data["ambient_temperature"]["data"][0]["value"]) * 100
+        thermostat.set_point_temperature = int(float(data["room_setpoint"]["data"][0]["value"]) * 100)
+        thermostat.temperature = int(float(data["ambient_temperature"]["data"][0]["value"]) * 100)
         thermostat.humidity = int(data["ambient_humidity"]["data"][0]["value"])
         thermostat.name = thermostat.name + " " + thermostat.serial_number
         if "flame_state" in data:

@@ -12,7 +12,7 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import UnitOfTemperature
+import homeassistant.const
 
 from .joule_api import Thermostat
 
@@ -74,12 +74,22 @@ SENSOR_TYPES: list[JouleSensorInfo] = [
         SensorEntityDescription(
             name="Temperature Room",
             icon="mdi:home-thermometer",
-            native_unit_of_measurement=UnitOfTemperature.FAHRENHEIT,
+            native_unit_of_measurement=homeassistant.const.UnitOfTemperature.CELSIUS,
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
             key="temperature",
         ),
         formatter=_temp_formatter,
+    ),
+    JouleSensorInfo(
+        SensorEntityDescription(
+            name="Humidity Room",
+            icon="mdi:water-percent",
+            native_unit_of_measurement=homeassistant.const.PERCENTAGE,
+            device_class=SensorDeviceClass.HUMIDITY,
+            state_class=SensorStateClass.MEASUREMENT,
+            key="humidity",
+        ),
     )
 ]
 
