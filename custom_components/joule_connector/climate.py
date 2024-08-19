@@ -118,10 +118,21 @@ class JouleThermostat(
 
         Returns
         -------
-            The current temperature in a float format..
+            The current temperature in a float format.
 
         """
         return self.coordinator.data[self.idx].get_current_temperature() / 100
+    
+    @property
+    def current_humidity(self) -> float:
+        """Return current humidity.
+
+        Returns
+        -------
+            The current humidity in a float format.
+
+        """
+        return self.coordinator.data[self.idx].humidity
 
     @property
     def target_temperature(self) -> float:
