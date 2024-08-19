@@ -101,7 +101,8 @@ class Thermostat:
         thermostat.set_point_temperature = int(data["room_setpoint"]["data"][0]["value"]) * 100
         thermostat.temperature = int(data["ambient_temperature"]["data"][0]["value"]) * 100
         thermostat.name = thermostat.name + " " + thermostat.serial_number
-
+        if "flame_state" in data:
+            thermostat.heating = bool(data["flame_state"]["data"][0]["value"])
 
         return thermostat
         
