@@ -87,7 +87,7 @@ class Thermostat:
             model=data["type"],
             serial_number=data["sn"],
             heating=False,
-            software_version=data["current_version"],
+            software_version=data["firmware_name"],
             name=data["display_name"],
             regulation_mode=0,
             supported_regulation_modes=[],
